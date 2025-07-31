@@ -17,6 +17,12 @@
     </style>
 </head>
 <body>
+    <div>
+        <form method="get">
+            <input type="text" name="search" value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
+            <button type="submit">tìm kiếm</button>
+        </form>
+    </div>
     <table>
         <caption><h1>Bảng Lương</h1></caption>
         <tr>
@@ -32,6 +38,8 @@
         </tr>
         <?php
             include('connect.php');
+            
+            // Xây dựng câu truy vấn với điều kiện tìm kiếm
             $sql = "SELECT 
                 l.id AS luong_id,
                 nv.ho_ten,
@@ -46,8 +54,15 @@
                 FROM luong AS l
                 JOIN nhan_vien AS nv ON l.nhan_vien_id = nv.id
                 JOIN chuc_vu AS cv ON nv.chuc_vu_id = cv.id
-                JOIN phong_ban AS pb ON nv.phong_ban_id = pb.id
-                ORDER BY l.id";
+                JOIN phong_ban AS pb ON nv.phong_ban_id = pb.id";
+            
+            // Thêm điều kiện tìm kiếm nếu có
+            if(isset($_GET['search']) && $_GET['search'] != ''){
+                $search = mysqli_real_escape_string($conn, $_GET['search']);
+                $sql .= " WHERE nv.ho_ten LIKE '%$search%'";
+            }
+            
+            $sql .= " ORDER BY l.id";
 
             $result = mysqli_query($conn, $sql);
             while($row = mysqli_fetch_assoc($result)) {
